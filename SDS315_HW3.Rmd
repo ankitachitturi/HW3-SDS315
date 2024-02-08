@@ -1,0 +1,181 @@
+---
+title: "SDS HW 3"
+output:
+  html_document: default
+date: "2024-02-01"
+---
+Name: Ankita Chitturi
+
+EID: ac86269
+
+Github Repo Link: https://github.com/ankitachitturi/HW3-SDS315.git 
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+file <- 'creatinine.csv'
+creatinine <- read.csv(file)
+
+file2 <- 'market.csv'
+market <- read.csv(file2)
+
+file3 <- 'covid.csv'
+covid <- read.csv(file3)
+
+file4 <- 'milk.csv'
+milk <- read.csv(file4)
+
+library(dplyr)
+library(tidyverse)
+library(ggplot2)
+library(mosaic)
+library(kableExtra)
+```
+
+## What creatinine clearance rate should we expect for a 55-year old?
+```{r, echo=FALSE, results=FALSE}
+creat = lm(creatclear~age,data=creatinine)
+coef <- coef(creat)
+
+intercept <- coef[1]
+age <- coef[2]
+print(age)
+print(intercept)
+#slope is age
+
+rate_55 <- intercept + (age * 55)
+print(rate_55)
+```
+We should expect a creatinine clearance rate of approximately 113.723 mL/minute. This was calculated by by multiplying the slope (-0.619) by the given age of 55, and adding this answer to the intercept which is around 147.81, giving a clearance rate of almost 114. 
+
+## How does creatinine clearance rate change with age?
+
+The creatinine clearance rate change with age is determined by the slope which is approximately -0.619, as found in part A. This negative slope indicates an inverse relationship between one's age and their creatinine clearance rate, meaning as one variable increases, the other one decreases. 
+
+## Whose creatinine clearance rate is healthier (higher) for their age: a 40-year-old with a rate of 135, or a 60-year-old with a rate of 112?
+```{r, echo=FALSE, results=FALSE}
+rate_40 = intercept + (age*40)
+print(rate_40)
+rate_60 = intercept + (age*60)
+print(rate_60)
+
+```
+The average creatinine clearance rate of a 40-year-old is found to be approximately 123, found by using the same equation from part A. As given, the rate of a 40-year-old is 135. Moreover, the average creatinine clearance rate of a 60-year-old is around 110, and the rate of the given 60-year-old is 112. It is concluded that the 40-year-old is healthier because the difference of actual rate from average rate is 12, while the same different is only 2 for the 60-year-old. The greater difference shown by the 40-year-old indicates that they are healthier for their age. 
+
+
+## What "beta" of a stock is measuing in your own words and how it is calculated (couple of hundred words)
+The beta of a stock measures one's systematic risk taking into consideration the market. This can help individuals understand how easily a stock's returns may change in the general market. Beta also compares previous price movements of a certain stock with the movements of the market index. Statistically speaking, a beta value of exactly 1 indicates that the certain stock moves with the market, meaning that they are directly proportional. Moreover, a beta value of greater than 1 suggets a high votality and a beta value of less than 1 suggest a low votality. It is easy to use beta and its value to see a stock's risk comparatively to the market.
+
+
+## The table itself
+```{r, echo=FALSE, results=FALSE}
+market_AAPL = lm(AAPL~SPY,data=market)
+coef(market_AAPL)
+
+market_GOOG = lm(GOOG~SPY,data=market)
+coef(market_GOOG)
+
+market_MRK = lm(MRK~SPY,data=market)
+coef(market_MRK)
+
+market_JNJ = lm(JNJ~SPY,data=market)
+coef(market_JNJ)
+
+market_WMT = lm(WMT~SPY,data=market)
+coef(market_WMT)
+
+market_TGT = lm(TGT~SPY,data=market)
+coef(market_TGT)
+
+inter <- rep(NA, 6)
+slope <- rep(NA, 6)
+r.sq <- rep(NA, 6)
+
+#intercepts for stocks 
+inter[1] <- coef(market_AAPL)[1]
+inter[2] <- coef(market_GOOG)[1]
+inter[3] <- coef(market_MRK)[1]
+inter[4] <- coef(market_JNJ)[1]
+inter[5] <- coef(market_WMT)[1]
+inter[6] <- coef(market_TGT)[1]
+
+#slopes for stocks
+slope[1] <- coef(market_AAPL)[2]
+slope[2] <- coef(market_GOOG)[2]
+slope[3] <- coef(market_MRK)[2]
+slope[4] <- coef(market_JNJ)[2]
+slope[5] <- coef(market_WMT)[2]
+slope[6] <- coef(market_TGT)[2]
+
+r.sq[1] = rsquared(market_AAPL)
+r.sq[2] = rsquared(market_GOOG)
+r.sq[3] = rsquared(market_MRK)
+r.sq[4] = rsquared(market_JNJ)
+r.sq[5] = rsquared(market_WMT)
+r.sq[6] = rsquared(market_TGT)
+
+inter <- inter %>% format(scientific = FALSE)
+names <- colnames(market)[3:ncol(market)]
+
+table <- tibble(`Ticket Symbol` = names, Intercept = inter, slope = slope, `R-Squared` = r.sq)
+print(table)
+```
+```{r, echo=FALSE}
+#professional looking
+kable_styling(
+  kable(
+    table,
+    format = "html",
+    align="c",
+    digits = 3,
+    escape = FALSE,
+    booktabs = TRUE,
+    linesep = ""
+  ),
+  position = "center",
+  latex_options = "hold_position"
+)
+```
+The table shown provides information about 6 ticket symbols for the 6 regressions. As shown, the intercept, slops, and r-squared values (range from 0 to 1) are all given.
+
+
+## In light of analysis, which of these 6 stocks has the lowest systematic risk? And which has the highest systematic risk?
+It can be said that Apple (AAPL) has the lowest systematic risk because it has the lowest r-squared value. This means that Google (GOOG) has the highest systematic risk because of its r-squared value.
+
+## Fit 2 exponential growth models, one for Italy and one for Spain, using days_since_first_death as the time variable. Use results of model to characterize growth rate and doublting time of the daily death total in each country
+
+```{r, echo=FALSE, results=FALSE}
+spain <- covid[covid$country == "Spain",]
+italy <- covid[covid$country == "Italy",]
+
+lm_italy = lm(log(deaths)~days_since_first_death, data =italy)
+coef = coef(lm_italy)
+coef_italy = round(coef,3)
+print(coef_italy)
+doubling_italy = round(70/18.32,0)
+print(doubling_italy)
+
+lm_spain = lm(log(deaths)~days_since_first_death, data=spain)
+coef = coef(lm_spain)
+coef_spain = round(coef,3)
+print(coef_spain)
+doubling_spain = round(70/27.62,0)
+print(doubling_spain)
+```
+```{r, echo=FALSE}
+ggplot(covid, aes(x=days_since_first_death, y=deaths, color=country)) + geom_line() + labs(title = "Reported Daily Deaths over Time by Country",x = "Days Since First Death",y="Deaths") + theme_classic()
+```
+
+The estimated growth rate for Italy is 0.183 while the intercept is 1.018; the doubling time is 4 (rounded to the nearest integer). The estimated growth rate for Spain is 0.276 while the intercept is 0.465; the doubling time is 3 (rounded to the nearest integer). The line graph depicts the reported daily deaths over time from Spain and Italy. 
+
+## What is the estimated price elasticity of demand for milk.
+```{r, echo=FALSE, results=FALSE}
+model <- lm(log(milk$sales)~log(milk$price), data = milk)
+coef <- coef(model)
+print(coef)
+```
+The estimated price elasticity of demand for milk is approximately -1.62. The natural log of sales and price was taken. Since the magnitude of the elasticity is greater than 1, it is considered to be elastic. This, in turn, suggests the demand for milk decreases as the price increases. Statistically speaking, when the price of milk increases by 1%, individuals feel the need to purchase approximately 1.62 less of it. 
+
+
+
+
